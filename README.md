@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestione Contratti Online</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f4f4;
+      padding: 40px;
+      color: #333;
+    }
+    h1 {
+      color: #2c3e50;
+    }
+    .container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-width: 1200px;
+      margin: auto;
+    }
+    input, button, select {
+      padding: 10px;
+      margin: 5px;
+      font-size: 14px;
+    }
+    input[type="text"], input[type="number"], input[type="date"] {
+      width: 200px;
+    }
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background: #f8f8f8;
+    }
+    .whatsapp-link {
+      color: #25D366;
+      font-weight: bold;
+      text-decoration: none;
+    }
+    .btn {
+      background: #3498db;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .btn:hover {
+      background: #2980b9;
+    }
+    .btn-danger {
+      background: #e74c3c;
+    }
+    .btn-danger:hover {
+      background: #c0392b;
+    }
+    #message {
+      margin-top: 10px;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📑 Sistema di Gestione Contratti Online</h1>
+    <p>Gestisci in modo semplice, veloce ed efficace i tuoi contratti.</p>
+
+    <h2>🔧 Inserisci Nuovo Contratto</h2>
+    <form id="contractForm">
+      <input type="date" id="dataContratto" required>
+      <input type="text" placeholder="Codice Contratto" id="codiceContratto" required>
+      <input type="text" placeholder="Tipologia Offerta" id="tipologiaOfferta">
+      <input type="number" placeholder="Prezzo kWh/mc" id="prezzoKwh" step="0.0001">
+      <input type="number" placeholder="Prezzo CCV" id="prezzoCCV" step="0.0001">
+      <input type="text" placeholder="Fornitore" id="fornitore">
+      <input type="text" placeholder="Cognome e Nome" id="nome">
+      <input type="text" placeholder="Cellulare" id="cellulare">
+      <input type="number" placeholder="Provvigione" id="provvigione" step="0.01">
+      <input type="text" placeholder="Note" id="note">
+      <button type="submit" class="btn">➕ Aggiungi</button>
+    </form>
+
+    <input type="text" id="search" placeholder="🔍 Cerca..." onkeyup="filterTable()">
+    <button onclick="exportCSV()" class="btn">📤 Esporta CSV</button>
+
+    <div id="message"></div>
+
+    <table id="contractsTable">
+      <thead>
+        <tr>
+          <th>Data Contratto</th>
+          <th>Codice</th>
+          <th>Tipologia</th>
+          <th>Prezzo kWh/mc</th>
+          <th>Prezzo CCV</th>
+          <th>Fornitore</th>
+          <th>Cognome e Nome</th>
+          <th>Cellulare</th>
+          <th>Provvigione</th>
+          <th>Note</th>
+          <th>Azioni</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    let contracts = [];
+
+    document.getElementById("contractForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const contratto = {
+        dataContratto: dataContratto.value,
+        codiceContratto: codiceContratto.value,
+        tipologiaOfferta: tipologiaOfferta.value,
+        prezzoKwh: prezzoKwh.value,
+        prezzoCCV: prezzoCCV.value,
+        fornitore: fornitore.value,
+        nome: nome.value,
+        cellulare: cellulare.value,
+        provvigione: provvigione.value,
+        note: note.value
+      };
+      contracts.push(contratto);
+      renderTable();
+      this.reset();
+      document.getElementById("message").textContent = "✅ Contratto aggiunto con successo.";
+      setTimeout(() => document.getElementById("message").textContent = "", 3000);
+    });
+
+    function renderTable() {
+      const tbody = document.querySelector("#contractsTable tbody");
+      tbody.innerHTML = "";
+      contracts.forEach((c, index) => {
+        const whatsappLink = `https://wa.me/393209717165?text=Salve%20${encodeURIComponent(c.nome)}%2C%20le%20scrivo%20in%20merito%20al%20contratto%20${encodeURIComponent(c.codiceContratto)}`;
+        tbody.innerHTML += `<tr>
+          <td>${c.dataContratto}</td>
+          <td>${c.codiceContratto}</td>
+          <td>${c.tipologiaOfferta}</td>
+          <td>${c.prezzoKwh}</td>
+          <td>${c.prezzoCCV}</td>
+          <td>${c.fornitore}</td>
+          <td>${c.nome}</td>
+          <td>
+            ${c.cellulare}<br>
+            <a href="${whatsappLink}" target="_blank" class="whatsapp-link">📱 WhatsApp</a>
+          </td>
+          <td>${c.provvigione}</td>
+          <td>${c.note}</td>
+          <td><button class="btn btn-danger" onclick="deleteContract(${index})">🗑️ Elimina</button></td>
+        </tr>`;
+      });
+    }
+
+    function deleteContract(index) {
+      if (confirm("Vuoi davvero eliminare questo contratto?")) {
+        contracts.splice(index, 1);
+        renderTable();
+        document.getElementById("message").textContent = "❌ Contratto eliminato.";
+        setTimeout(() => document.getElementById("message").textContent = "", 3000);
+      }
+    }
+
+    function exportCSV() {
+      const headers = [
+        "Data Contratto", "Codice Contratto", "Tipologia Offerta Sottoscritta",
+        "Prezzo kWh/mc", "Prezzo CCV", "Fornitore",
+        "Cognome e Nome", "Cellulare", "Provvigione", "Note"
+      ];
+      const rows = contracts.map(c =>
+        [c.dataContratto, c.codiceContratto, c.tipologiaOfferta, c.prezzoKwh, c.prezzoCCV,
+         c.fornitore, c.nome, c.cellulare, c.provvigione, c.note]
+      );
+      let csv = [headers, ...rows].map(r => r.join(",")).join("\n");
+      let blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      let link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "contratti.csv";
+      link.click();
+    }
+
+    function filterTable() {
+      const term = document.getElementById("search").value.toLowerCase();
+      const rows = document.querySelectorAll("#contractsTable tbody tr");
+      rows.forEach(row => {
+        row.style.display = row.innerText.toLowerCase().includes(term) ? "" : "none";
+      });
+    }
+  </script>
+</body>
+</html>
